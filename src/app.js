@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const logger = require("./utils/logger");
+const monitorRoutes = require("./routes/monitorRoutes");
+const alertRoutes = require("./routes/alertRoutes");
+const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -15,5 +18,11 @@ app.use((req, res, next) => {
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+app.use(monitorRoutes);
+app.use(alertRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;
