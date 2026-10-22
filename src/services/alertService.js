@@ -1,3 +1,5 @@
+const { callGroq } = require("./groqClient");
+
 function buildFallbackMessage(apiName, issue, metrics) {
   const statusCode = metrics && metrics.status_code;
   const responseTime = metrics && metrics.response_time_ms;
@@ -30,4 +32,32 @@ function buildFallbackMessage(apiName, issue, metrics) {
   }
 }
 
-module.exports = { buildFallbackMessage };
+function buildPrompt(apiName, issue, metrics) {
+  const statusCode = metrics && metrics.status_code;
+  const responseTime = metrics && metrics.response_time_ms;
+  const recordsReturned = metrics && metrics.records_returned;
+
+  return `An API monitoring system detected an issue.
+API name: ${apiName}
+Issue type: ${issue.type}
+Severity: ${issue.severity}
+Status code: ${statusCode ?? "N/A"}
+Response time (ms): ${responseTime ?? "N/A"}
+Records returned: ${recordsReturned ?? "N/A"}
+Detail: ${issue.detail}
+
+Write a short, human-readable alert message (1-2 sentences) for a monitoring dashboard, explaining what went wrong and the likely cause. Do not repeat the raw field names, write it as natural text.`;
+}
+
+async function generateAlertMessage(apiName, issue, metrics) {
+  try {
+    const prompt = buildPrompt(apiName, issue, metrics);
+    const aiMessage = await callGroq(prompt);
+    return { message: aiMessage, source: "ai" };
+  } catch (err) {
+    const fallbackMessage = buildFallbackMessage(apiName, issue, metrics);
+    return { message: fallbackMessage, source: "fallback" };
+  }
+}
+
+module.exports = { buildFallbackMessage, generateAlertMessage };
