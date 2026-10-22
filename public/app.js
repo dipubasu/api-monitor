@@ -37,6 +37,12 @@ const highCountEl = document.getElementById("highCount");
 const mediumCountEl = document.getElementById("mediumCount");
 const sendSampleBtn = document.getElementById("sendSampleBtn");
 
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = String(value ?? "");
+  return div.innerHTML;
+}
+
 function formatTime(isoLikeString) {
   const date = new Date(isoLikeString.replace(" ", "T") + "Z");
   return date.toLocaleString();
@@ -51,18 +57,19 @@ function renderAlerts(alerts) {
 
   alertListEl.innerHTML = alerts
     .map((alert) => {
+      const severity = escapeHtml(alert.severity);
       return `
-        <div class="alert-item ${alert.severity}">
+        <div class="alert-item ${severity}">
           <div class="alert-top">
-            <span class="alert-api-name">${alert.api_name}</span>
-            <span class="badge ${alert.severity}">${alert.severity}</span>
+            <span class="alert-api-name">${escapeHtml(alert.api_name)}</span>
+            <span class="badge ${severity}">${severity}</span>
           </div>
-          <p class="alert-message">${alert.message}</p>
+          <p class="alert-message">${escapeHtml(alert.message)}</p>
           <div class="alert-meta">
-            <span>Issue: ${alert.issue_type}</span>
-            <span>Occurrences: ${alert.occurrence_count}</span>
-            <span>Last seen: ${formatTime(alert.last_seen_at)}</span>
-            <span class="source-tag">${alert.source}</span>
+            <span>Issue: ${escapeHtml(alert.issue_type)}</span>
+            <span>Occurrences: ${escapeHtml(alert.occurrence_count)}</span>
+            <span>Last seen: ${escapeHtml(formatTime(alert.last_seen_at))}</span>
+            <span class="source-tag">${escapeHtml(alert.source)}</span>
           </div>
         </div>
       `;
@@ -85,7 +92,7 @@ async function loadAlerts() {
     const data = await res.json();
     renderAlerts(data.alerts || []);
   } catch (err) {
-    alertListEl.innerHTML = `<p class="empty-state">Failed to load alerts: ${err.message}</p>`;
+    alertListEl.innerHTML = `<p class="empty-state">Failed to load alerts: ${escapeHtml(err.message)}</p>`;
   }
 }
 
