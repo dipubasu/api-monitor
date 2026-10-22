@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const logger = require("./utils/logger");
 const monitorRoutes = require("./routes/monitorRoutes");
@@ -14,6 +15,8 @@ app.use((req, res, next) => {
   logger.info(`${req.method} ${req.url}`);
   next();
 });
+
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
